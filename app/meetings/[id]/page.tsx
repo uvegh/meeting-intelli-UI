@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { meetingsApi } from '@/lib/api';
 import { Meeting } from '@/lib/types';
@@ -9,21 +9,36 @@ import ActionItemsTable from '@/components/ActionItemsTable';
 import PrintButton from '@/components/PrintButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Calendar, Users, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
+import { ArrowLeft, Calendar, Users, Sparkles, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function MeetingDetailPage({ params }: { params: { id: string } }) {
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const searchParams = useSearchParams();
+    const { id } = useParams();
+    const idString = String(id);
+  const router = useRouter();
   const isPrintMode = searchParams.get('print') === 'true';
-  const {id}=useParams();
+
   useEffect(() => {
-  
     const fetchMeeting = async () => {
       try {
-        const data = await meetingsApi.getById(id);
+        const data = await meetingsApi.getById(idString);
         setMeeting(data);
       } catch (error) {
         console.error('Failed to fetch meeting:', error);
@@ -33,7 +48,23 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
     };
 
     fetchMeeting();
-  },[id]);
+  }, [  idString]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await meetingsApi.delete(idString);
+      toast.success('Meeting deleted successfully');
+      router.push('/meetings');
+    } catch (error) {
+      console.error('Failed to delete meeting:', error);
+      toast.error('Failed to delete meeting', {
+        description: 'Please try again later.',
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -53,7 +84,7 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle>Meeting not found</CardTitle>
-            <CardDescription>The meeting you&apos;re looking for doesn &apos;t exist.</CardDescription>
+            <CardDescription>The meeting you&rsquo;re looking for doesn&rsquo;t exist.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
@@ -81,7 +112,7 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
 
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight break-words">{meeting.title}</h1>
+              <h1 className="text-3xl font-bold tracking-tight wrap-break-words">{meeting.title}</h1>
               <div className="flex flex-wrap items-center gap-4 mt-2 text-muted-foreground text-sm">
                 <span className="inline-flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
@@ -94,12 +125,48 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            {!isPrintMode && <PrintButton type="detail" meetingId={ String(id)} />}
+            {!isPrintMode && (
+              <div className="flex gap-2">
+                <PrintButton type="detail" meetingId={idString} />
+                <Button variant="outline" asChild>
+                  <Link href={`/meetings/${id}/edit`}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={deleting}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Meeting?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the meeting
+                        &quot;{meeting.title}&quot; and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         </div>
 
         {/* AI Summary */}
-        {meeting?.summary && (
+        {meeting.summary && (
           <Card className="mb-6 border-primary/20 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center text-lg">
