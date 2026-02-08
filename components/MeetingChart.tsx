@@ -17,7 +17,7 @@ export default function MeetingChart({ data }: MeetingChartProps) {
     },
     xAxis: {
       type: 'category',
-      data: data.map((d) => d.month),
+      data: data?.map((d) => d.month),
       axisLabel: {
         rotate: 45,
       },
@@ -30,7 +30,7 @@ export default function MeetingChart({ data }: MeetingChartProps) {
       {
         name: 'Meetings',
         type: 'bar',
-        data: data.map((d) => d.count),
+        data: data?.map((d) => d.count),
         itemStyle: {
           color: '#3b82f6',
         },

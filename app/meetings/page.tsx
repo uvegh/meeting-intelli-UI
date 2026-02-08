@@ -1,65 +1,63 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-
-import { Meeting, ChartData } from '@/lib/types';
+import { Meeting } from '@/lib/types';
 import MeetingCard from '@/components/MeetingCard';
-
+import MeetingChart from '@/components/MeetingChart';
 import PrintButton from '@/components/PrintButton';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Plus } from 'lucide-react';
-import MeetingChart from '@/components/MeetingChart';
-import { meetingsApi } from '@/lib/api';
 
-export default function MeetingsPage() {
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
-  const isPrintMode = searchParams.get('print') === 'true';
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [meetingsData, statsData] = await Promise.all([
-          meetingsApi.getAll(),
-          meetingsApi.getStatistics(),
-        ]);
-        setMeetings(meetingsData);
-        setChartData(statsData.byMonth);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setLoading(false);
+// Fetch meetings directly on server
+async function getMeetings(): Promise<Meeting[]> {
+  try {
+    const response = await fetch(
+      `${process.env.BACKEND_API_URL}/api/meetings`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store', // Always get fresh data
       }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-64" />
-            <Skeleton className="h-64 w-full" />
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-48" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
     );
+
+    if (!response.ok) {
+      console.error('Failed to fetch meetings');
+      return [];
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Failed to fetch meetings:', error);
+    return [];
   }
+}
+
+// Server Component (async)
+export default async function MeetingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ print?: string }>;
+}) {
+  // Fetch data on server
+  const meetings = await getMeetings();
+  const isPrintMode =  (await searchParams)?.print === 'true';
+
+  // Calculate chart data on server
+  const chartData = meetings.reduce((acc, meeting) => {
+    const date = new Date(meeting?.meetingDate);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const existing = acc.find(item => item.month === monthKey);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      acc.push({ month: monthKey, count: 1 });
+    }
+    return acc;
+  }, [] as { month: string; count: number }[]);
 
   return (
-    <div className="min-h-screen bg-background py-8" data-pdf-ready={!loading}>
+    <div className="min-h-screen bg-background py-8" data-pdf-ready="true">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
@@ -71,9 +69,12 @@ export default function MeetingsPage() {
           {!isPrintMode && (
             <div className="flex gap-3">
               <PrintButton type="list" />
-              <Button className='border border-primary bg-linear-to-r text-white from-blue-500 to-purple-600' asChild>
+              <Button 
+                className="bg-linear-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700" 
+                asChild
+              >
                 <Link href="/meetings/new">
-                  <Plus className="w-4 h-4 mr-2 text-white " />
+                  <Plus className="w-4 h-4 mr-2" />
                   New Meeting
                 </Link>
               </Button>
@@ -81,25 +82,34 @@ export default function MeetingsPage() {
           )}
         </div>
 
-        {/* Chart */}
-        <div className="bg-card rounded-lg border shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Meetings by Month</h2>
-          <MeetingChart data={chartData} />
-        </div>
-
-        {/* Meetings Grid */}
         {meetings.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {meetings.map((meeting) => (
-              <MeetingCard key={meeting.id} meeting={meeting} />
-            ))}
-          </div>
+          <>
+            {/* Charts */}
+            <MeetingChart data={chartData}  />
+            
+            {/* Meetings Grid */}
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {meetings.map((meeting) => (
+                <MeetingCard key={meeting.id} meeting={meeting} />
+              ))}
+            </div>
+          </>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg mb-4">No meetings found</p>
-            <Button asChild>
-              <Link href="/meetings/new">Create your first meeting</Link>
-            </Button>
+          <div className="text-center py-32">
+            <div className="max-w-md mx-auto">
+              <h3 className="text-xl font-semibold mb-2">No meetings yet</h3>
+              <p className="text-muted-foreground mb-6">Create your first meeting to get started!</p>
+              <Button 
+                asChild 
+                size="lg"
+                className="bg-linear-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700"
+              >
+                <Link href="/meetings/new">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Meeting
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
       </div>
