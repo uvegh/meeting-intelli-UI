@@ -13,9 +13,11 @@ export async function POST() {
     );
 
     if (!response.ok) {
+      console.log(response);
       throw new Error('Failed to generate PDF');
-    }
 
+    }
+console.log('PDF generation response:', response);
     const pdfBuffer = await response.arrayBuffer();
 
     return new NextResponse(pdfBuffer, {

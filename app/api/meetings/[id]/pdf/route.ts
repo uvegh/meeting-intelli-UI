@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }>  }
 ) {
   try {
+    const { id } = await params;
+    console.log('Generating PDF for meeting with id:', id);
     const response = await fetch(
-      `${process.env.BACKEND_API_URL}/api/meetings/${params.id}/pdf`,
+      `${process.env.BACKEND_API_URL}/api/meetings/${id}/pdf`,
       {
         method: 'POST',
         headers: {
@@ -16,6 +18,7 @@ export async function POST(
     );
 
     if (!response.ok) {
+          console.log(response);
       throw new Error('Failed to generate PDF');
     }
 
@@ -24,7 +27,7 @@ export async function POST(
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="meeting-${params.id}-${new Date().toISOString().split('T')[0]}.pdf"`,
+        'Content-Disposition': `attachment; filename="meeting-${id}-${new Date().toISOString().split('T')[0]}.pdf"`,
       },
     });
   } catch (error) {
