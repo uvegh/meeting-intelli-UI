@@ -27,6 +27,7 @@ export default function PrintButton({ type, meetingId }: PrintButtonProps) {
       });
 
       if (!response.ok) {
+        console.log('PDF generation failed:', response);
         throw new Error('PDF generation failed');
       }
 

@@ -25,43 +25,50 @@ import { toast } from 'sonner';
 import { ArrowLeft, Calendar, Users, Sparkles, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function MeetingDetailPage({ params }: { params: { id: string } }) {
+interface MeetingDetailPageProps {
+  params: { id: string };
+}
+
+export default function MeetingDetailPage({ params }: MeetingDetailPageProps) {
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const searchParams = useSearchParams();
-    const { id } = useParams();
-    const idString = String(id);
+
   const router = useRouter();
+  const {id}= useParams();
   const isPrintMode = searchParams.get('print') === 'true';
 
   useEffect(() => {
     const fetchMeeting = async () => {
       try {
-        const data = await meetingsApi.getById(idString);
+        const data = await meetingsApi.getById( String(id));
         setMeeting(data);
       } catch (error) {
         console.error('Failed to fetch meeting:', error);
+        toast.error('Failed to load meeting');
       } finally {
         setLoading(false);
       }
     };
 
     fetchMeeting();
-  }, [  idString]);
+  }, [id]);
 
   const handleDelete = async () => {
+    if (!meeting) return;
+    
     setDeleting(true);
     try {
-      await meetingsApi.delete(idString);
+      await meetingsApi.delete(String(id));
       toast.success('Meeting deleted successfully');
       router.push('/meetings');
+      router.refresh();
     } catch (error) {
       console.error('Failed to delete meeting:', error);
       toast.error('Failed to delete meeting', {
         description: 'Please try again later.',
       });
-    } finally {
       setDeleting(false);
     }
   };
@@ -99,63 +106,77 @@ export default function MeetingDetailPage({ params }: { params: { id: string } }
   return (
     <div className="min-h-screen bg-background py-8" data-pdf-ready={!loading}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          {!isPrintMode && (
-            <Button variant="ghost" asChild className="mb-4">
-              <Link href="/meetings">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to meetings
-              </Link>
-            </Button>
-          )}
+        {/* Back Button */}
+        {!isPrintMode && (
+          <Button variant="ghost" asChild className="mb-4">
+            <Link href="/meetings">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to meetings
+            </Link>
+          </Button>
+        )}
 
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight wrap-break-words">{meeting.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-muted-foreground text-sm">
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
+            {/* Title and Meta */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold tracking-tight wrap-break-words">
+                {meeting.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-4 mt-3 text-muted-foreground text-sm">
                 <span className="inline-flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
+                  <Calendar className="w-4 h-4 mr-2 shrink-0" />
                   {format(new Date(meeting.meetingDate), 'MMMM d, yyyy')}
                 </span>
                 <span className="inline-flex items-center">
-                  <Users className="w-4 h-4 mr-2" />
+                  <Users className="w-4 h-4 mr-2 shrink-0" />
                   {meeting.attendees}
                 </span>
               </div>
             </div>
 
+            {/* Action Buttons */}
             {!isPrintMode && (
-              <div className="flex gap-2">
-                <PrintButton type="detail" meetingId={idString} />
+              <div className="flex flex-wrap items-center gap-2">
+                <PrintButton type="detail" meetingId={ String(id)} />
+                
                 <Button variant="outline" asChild>
                   <Link href={`/meetings/${id}/edit`}>
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
                   </Link>
                 </Button>
+
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" disabled={deleting}>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
+                    <Button 
+                      variant="destructive" 
+                      disabled={deleting}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2 text-black cursor-pointer hover:animate-pulse" />
+                      {deleting ? 'Deleting...' : 'Delete'}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Meeting?</AlertDialogTitle>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
                         This action cannot be undone. This will permanently delete the meeting
-                        &quot;{meeting.title}&quot; and all associated data.
+                        &quot;{meeting.title}&quot; and all associated data including AI-generated 
+                        summaries and action items.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel disabled={deleting}>
+                        Cancel
+                      </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDelete}
+                        disabled={deleting}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        Delete
+                        {deleting ? 'Deleting...' : 'Delete Meeting'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
