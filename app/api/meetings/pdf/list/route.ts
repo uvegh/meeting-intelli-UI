@@ -1,7 +1,11 @@
+
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(request:Request) {
   try {
+    const body =await request.json();
+    const { viewportWidth, viewportHeight } = body || {};
+  
     const response = await fetch(
       `${process.env.BACKEND_API_URL}/api/meetings/pdf/list`,
       {
@@ -9,6 +13,10 @@ export async function POST() {
         headers: {
           'Content-Type': 'application/json',
         },
+         body: JSON.stringify({
+          viewportWidth,
+          viewportHeight,
+        }),
       }
     );
 
@@ -17,6 +25,7 @@ export async function POST() {
       throw new Error('Failed to generate PDF');
 
     }
+      console.log('Generating PDF for meetings overview with viewport:', viewportWidth, viewportHeight);
 console.log('PDF generation response:', response);
     const pdfBuffer = await response.arrayBuffer();
 

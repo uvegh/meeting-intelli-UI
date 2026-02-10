@@ -150,11 +150,11 @@ export default function MeetingDetailPage({ params }: MeetingDetailPageProps) {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button className='cursor-pointer bg-red-300 text-destructive-foreground hover:bg-red-500'
+                    <Button className='cursor-pointer text-black bg-red-500  hover:bg-red-600'
                       variant="destructive" 
                       disabled={deleting}
                     >
-                      <Trash2 className="w-4 h-4 mr-2 text-black cursor-pointer hover:animate-pulse" />
+                      <Trash2 className="w-4 h-4 mr-2 text-black cursor-pointer  text- blackhover:animate-pulse" />
                       {deleting ? 'Deleting...' : 'Delete'}
                     </Button>
                   </AlertDialogTrigger>

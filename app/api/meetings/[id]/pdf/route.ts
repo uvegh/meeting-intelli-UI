@@ -6,7 +6,9 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    console.log('Generating PDF for meeting with id:', id);
+    const body = await request.json();
+    const { viewportWidth, viewportHeight } = body || {};
+    console.log('Generating PDF for meeting with id:', id, 'with viewport:', viewportWidth, viewportHeight);
     const response = await fetch(
       `${process.env.BACKEND_API_URL}/api/meetings/${id}/pdf`,
       {
@@ -14,6 +16,10 @@ export async function POST(
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          viewportWidth,
+          viewportHeight,
+        }),
       }
     );
 

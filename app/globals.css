@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f7f1f1;
   --foreground: #171717;
 }
 
@@ -19,8 +19,30 @@
   }
 }
 
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Prevent page breaks inside cards */
+@media print {
+  .meeting-card,
+  [class*="card"] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure charts don't break */
+  .chart-container,
+  [class*="chart"] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Clean page breaks between sections */
+  .page-break {
+    page-break-before: always;
+  }
 }

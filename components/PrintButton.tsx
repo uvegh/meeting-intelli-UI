@@ -17,23 +17,33 @@ export default function PrintButton({ type, meetingId }: PrintButtonProps) {
     setLoading(true);
 
     try {
+         const width = window.innerWidth;
+      const height = window.innerHeight;
+      console.log('Requesting PDF generation with viewport:', width, height);
       const endpoint =
         type === 'list'
           ? '/api/meetings/pdf/list'
           : `/api/meetings/${meetingId}/pdf`;
 
-      const response = await fetch(endpoint, {
+     const response = await fetch(endpoint, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          viewportWidth: width,
+          viewportHeight: height,
+        }),
       });
-
-      if (!response.ok) {
+      if (!response?.ok) {
         console.log('PDF generation failed:', response);
         throw new Error('PDF generation failed');
       }
 
-      const blob = await response.blob();
+      const blob = await response?.blob();
+      console.log('PDF blob received:', blob);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document?.createElement('a');
       a.href = url;
       a.download =
         type === 'list'

@@ -44,5 +44,5 @@ export default function MeetingChart({ data }: MeetingChartProps) {
     },
   };
 
-  return <ReactECharts option={option} style={{ height: '300px' }} />;
+  return <ReactECharts option={option} style={{ minHeight: '320px' }} />;
 }
