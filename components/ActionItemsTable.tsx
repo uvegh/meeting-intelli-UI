@@ -31,8 +31,8 @@ export default function ActionItemsTable({ actionItems }: ActionItemsTableProps)
   return (
     <div className="rounded-md border">
       <Table>
-        <TableHeader>
-          <TableRow>
+        <TableHeader >
+          <TableRow >
             <TableHead>Assignee</TableHead>
             <TableHead>Task</TableHead>
             <TableHead>Due Date</TableHead>
@@ -40,16 +40,16 @@ export default function ActionItemsTable({ actionItems }: ActionItemsTableProps)
           </TableRow>
         </TableHeader>
         <TableBody>
-          {actionItems.map((item, index) => (
+          {actionItems?.map((item, index) => (
             <TableRow key={index}>
-              <TableCell className="font-medium">{item.assignee}</TableCell>
-              <TableCell>{item.task}</TableCell>
+              <TableCell className="font-medium capitalize">{item.assignee}</TableCell>
+              <TableCell>{item?.task}</TableCell>
               <TableCell>
-                {item.dueDate ? format(new Date(item.dueDate), 'MMM d, yyyy') : 'No due date'}
+                {item?.dueDate ? format(new Date(item.dueDate), 'MMM d, yyyy') : 'No due date'}
               </TableCell>
               <TableCell>
-                <Badge variant={getPriorityVariant(item.priority)}>
-                  {item.priority}
+                <Badge  className ="text-black"variant={getPriorityVariant(item?.priority)}>
+                  {item?.priority}
                 </Badge>
               </TableCell>
             </TableRow>
