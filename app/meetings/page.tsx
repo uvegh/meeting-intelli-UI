@@ -127,14 +127,14 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { Meeting } from '@/lib/types';
 
-async function getMeetings() {
-  return await meetingsApi.getAll();
-}
+// async function getMeetings() {
+//   return await meetingsApi.getAll();
+// }
 
 export default async function MeetingsPage({ 
   searchParams 
 }: { 
-  searchParams: { print?: string } 
+  searchParams: Promise<{ print?: string }> 
 }) {
 
   async function getMeetings(): Promise<Meeting[]> {
@@ -146,7 +146,7 @@ export default async function MeetingsPage({
         headers: {
           'Content-Type': 'application/json',
         },
-        cache: 'no-store', // Always get fresh data
+        //cache: 'no-store', // Always get fresh data
       }
     );
 
@@ -163,12 +163,12 @@ export default async function MeetingsPage({
   }
 }
   const meetings = await getMeetings();
-  const isPrintMode = searchParams?.print === 'true';
+  const isPrintMode =   (await searchParams)?.print === 'true';
 
   // Calculate chart data
-  const chartData = meetings.reduce((acc, meeting) => {
-    const month = meeting.meetingDate.substring(0, 7); // YYYY-MM
-    const existing = acc.find((d) => d.month === month);
+  const chartData = meetings?.reduce((acc, meeting) => {
+    const month = meeting?.meetingDate?.substring(0, 7); // YYYY-MM
+    const existing = acc?.find((d) => d.month === month);
     if (existing) {
       existing.count++;
     } else {
@@ -213,14 +213,14 @@ export default async function MeetingsPage({
           <MeetingChart data={chartData} />
         </div>
         <div className="chart-container">
-          <h2 className="text-xl font-semibold mb-4">Action Items by Priority</h2>
+          <h2 className="text-xl font-semibold ">Action Items by Priority</h2>
           <ActionItemsChart data={actionItemsData} />
         </div>
       </div>
 
      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meetings.map((meeting) => (
+        {meetings?.map((meeting) => (
           <MeetingCard key={meeting?.id} meeting={meeting} />
         ))}
       </div>

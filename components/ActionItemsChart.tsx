@@ -6,13 +6,14 @@ interface ActionItemsChartProps {
   data: Record<string, number>;
 }
 
-export default function ActionItemsChart({ data }: ActionItemsChartProps) {
-  const priorities = ['High', 'Medium', 'Low'];
+ const priorities = ['High', 'Medium', 'Low'];
   const colors = {
-    High: '#ef4444',    // red
-    Medium: '#f59e0b',  // orange
-    Low: '#3b82f6',     // blue
+    High: '#ef4444',    
+    Medium: '#f59e0b',  
+    Low: '#3b82f6',     
   };
+export default function ActionItemsChart({ data }: ActionItemsChartProps) {
+ 
 
   const chartData = priorities.map((priority) => ({
     value: data[priority] || 0,
@@ -27,7 +28,7 @@ export default function ActionItemsChart({ data }: ActionItemsChartProps) {
     },
     legend: {
       orient: 'vertical',
-      left: 'left',
+      left: 'right',
       data: priorities,
     },
     series: [
@@ -52,8 +53,8 @@ export default function ActionItemsChart({ data }: ActionItemsChartProps) {
   };
 
   return (
-   
+   <div className="chart-container p-5">
       <ReactECharts option={option} style={{ height: '300px' }} />
-    
+    </div>
   );
 }

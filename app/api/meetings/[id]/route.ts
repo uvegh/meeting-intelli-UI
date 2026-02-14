@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// GET /api/meetings/[id]
+// GET    /api/meetings/[id]
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -33,7 +33,7 @@ export async function GET(
   }
 }
 
-// PUT /api/meetings/[id]
+// PUT    /api/meetings/[id]
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -71,6 +71,7 @@ export async function PUT(
   }
 }
 
+//api/delete/meetings/[id]
 
 export async function DELETE(
   request: Request,

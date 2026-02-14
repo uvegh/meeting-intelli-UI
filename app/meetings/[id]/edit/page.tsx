@@ -173,7 +173,7 @@ const { id } = useParams();
                   )}
                 />
 
-                <FormField
+    <FormField
                   control={form.control}
                   name="notes"
                   render={({ field }) => (
@@ -195,7 +195,7 @@ const { id } = useParams();
                 />
 
                 <div className="flex gap-4">
-                  <Button type="submit" disabled={saving} className="flex-1  bg-linear-to-r text-white from-blue-500 to-purple-600">
+                  <Button type="submit" disabled={saving} className="flex-1  bg-linear-to-r  text-white from-blue-500 to-purple-600">
                     {saving ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
