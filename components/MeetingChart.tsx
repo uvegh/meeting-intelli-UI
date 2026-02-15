@@ -15,6 +15,10 @@ export default function MeetingChart({ data }: MeetingChartProps) {
         type: 'shadow',
       },
     },
+    // legend: {
+    //   data: ['Meetings'],
+    //   left:'left'
+    // },
     xAxis: {
       type: 'category',
       data: data?.map((d) => d.month),
