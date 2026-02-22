@@ -13,24 +13,24 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
   const actionItemCount = meeting.actionItems?.length || 0;
 
   return (
-    <Link href={`/meetings/${meeting.id}`}>
+    <Link href={`/meetings/${meeting?.id}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
         <CardHeader>
-          <CardTitle className="line-clamp-2">{meeting.title}</CardTitle>
+          <CardTitle className="line-clamp-2">{meeting?.title}</CardTitle>
           <CardDescription className="line-clamp-2">
-            {meeting.summary || meeting.notes}
+            {meeting?.summary || meeting?.notes}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-2 shrink-0" />
-              <span>{format(new Date(meeting.meetingDate), 'MMM d, yyyy')}</span>
+              <span>{format(new Date(meeting?.meetingDate), 'MMM d, yyyy')}</span>
             </div>
 
             <div className="flex items-center">
               <Users className="w-4 h-4 mr-2 hrink-0" />
-              <span className="truncate">{meeting.attendees}</span>
+              <span className="truncate">{meeting?.attendees}</span>
             </div>
 
             {actionItemCount > 0 && (

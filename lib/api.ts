@@ -17,13 +17,14 @@ export const meetingsApi = {
   },
 
   getById: async (id: string): Promise<Meeting> => {
-    const { data } = await api.get<ApiResponse<Meeting>>(`/meetings/${id}`);
-     console.log('Fetched meeting with id:', id, data?.data);
+    const { data } = await axios.get<ApiResponse<Meeting>>(`http://localhost:3000/api/meetings/${id}`);
+     console.log('Fetched meeting with id at lib', id, data?.data);
+     
     return data?.data;
   },
 
   create: async (request: CreateMeetingRequest): Promise<Meeting> => {
-    const { data } = await api.post<ApiResponse<Meeting>>('/meetings', request);
+    const { data } = await axios.post<ApiResponse<Meeting>>('http://localhost:3000/api/meetings', request);
     console.log('Created meeting:', data?.data);
     return data.data;
   },

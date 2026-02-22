@@ -247,13 +247,15 @@ import MeetingActions from '../MeetingActions';
 
 
 interface PageProps {
-    params: { id: string };
+    params:  Promise<{ id: string }>;
     searchParams: { print?: string };
 }
 const  {getById} = meetingsApi;
 export default async function MeetingDetailPage({ params, searchParams }: PageProps) {
-    // ✅ Direct server fetch - no useEffect, no loading state
-    const meeting = await getById(params.id);
+    // Direct server fetch - no useEffect, no loading state
+    const {id} = await params;
+     console.log('Fetching meeting with id:', id);
+    const meeting = await getById(id);
 
     if (!meeting) notFound();
 
@@ -261,7 +263,7 @@ export default async function MeetingDetailPage({ params, searchParams }: PagePr
 
     return (
         //  Pattern 1: Server passes data to Client Provider
-        // ✅Pattern 2: Server children passed through Client Provider safely
+        // Pattern 2: Server children passed through Client Provider safely
         <MeetingProvider meeting={meeting}>
 
             <div className="min-h-screen bg-background py-8" data-pdf-ready="true">
@@ -298,7 +300,7 @@ export default async function MeetingDetailPage({ params, searchParams }: PagePr
                                 </div>
                             </div>
 
-                            {/* ✅ Pattern 3: Decomposition
+                            {/* Pattern 3: Decomposition
                                 Only the interactive buttons are Client.
                                 MeetingActions gets meeting from context - no prop drilling */}
                             {!isPrintMode && <MeetingActions />}
